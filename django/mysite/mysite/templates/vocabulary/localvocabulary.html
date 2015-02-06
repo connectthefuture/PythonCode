@@ -1,0 +1,79 @@
+{% extends "public/ibase.html" %}
+{% block content %}
+<body>
+<script src="/static/js/string.js"></script>
+<script type="text/javascript">
+    db = window.openDatabase('html5app', '1.0', 'html5app DB', 10 * 1024 * 1024);
+    var request = window.indexedDB.open("CandyDB", "My candy store database");
+    if(request == null) {
+        alert("no indexdb suppport");
+    }
+    N = 100;
+    function rjust(str, N, ch) {
+        var n = N - str.length;
+        var tmp = str;
+        for (var i = 0; i < n; i++) {
+            tmp = ch + tmp;
+        }
+        return tmp;
+    }
+    function getword() {
+        if (db == null) {
+            alert("open db failed");
+            return;
+        }
+        db.transaction(function (tx) {
+            tx.executeSql("SELECT idx AS maxidx FROM vocabulary t ORDER BY idx DESC LIMIT 1", [], function (tx, results) {
+                var len = results.rows.length, i;
+                var maxidx = results.rows.item(0)['maxidx'];
+                var N = Math.floor(Math.random() * maxidx);
+                var idx = rjust(N.toString(), 6, '0');
+                tx.executeSql("select * from vocabulary where idx = '" + idx + "'", [], function (tx, results) {
+                    var word = results.rows.item(0)['word'];
+                    var explain = results.rows.item(0)['explain'];
+                    var level = results.rows.item(0)['level'];
+                    document.getElementById("text_word").value = word;
+                    document.getElementById("text_explain").value = explain;
+                }, function (tx, error) {
+                    alert(error.message);
+                });
+            }, function (tx, error) {
+                alert(error.message);
+            });
+        });
+    }
+
+</script>
+
+<div class="container">
+    <form role="form" class=".form-inline">
+        <div class="form-group">
+            <label for="text_word">单词</label>
+            <input type="text" class="form-control" id="text_word" value="" readonly>
+        </div>
+        <div class="form-group">
+            <label for="text_explain">例句</label>
+            <!--<input type="textarea" class="form-control" id="text_explain" value="" rows="3" readonly>-->
+            <textarea class="form-control" id="text_explain" rows="4"></textarea>
+
+        </div>
+
+        <div class="form-group">
+            <label for="select_complex">难度</label>
+            <select class="form-control" id="select_complex">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+            </select>
+        </div>
+        <!--<button type="submit" class="btn btn-default" onclick="foo()">Save</button>-->
+
+    </form>
+    <p/>
+
+    <div>
+        <button class="btn btn-default" onclick="getword()">Next</button>
+    </div>
+</div>
+</body>
+{% endblock %}

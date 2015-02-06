@@ -1,0 +1,10 @@
+{% extends "public/ibase.html" %}
+{% block title %} TEST1 {% endblock %}
+{% block content %}
+    <h2>Publishers</h2>
+        <ul>
+            {% for publisher in queryset %}
+                <li>{{ publisher.userid }}</li>
+            {% endfor %}
+        </ul>
+{% endblock %}

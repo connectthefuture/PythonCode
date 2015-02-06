@@ -1,0 +1,10 @@
+{% extends "ibase.html" %}
+{% block title %}
+查询表数据
+{% endblock %}
+{% block content %}
+    <form action={{ posturl }} method="POST">  {% csrf_token %}
+        <table> {{ form.as_table }} </table> <p>
+        <input type="submit" value="Submit"></p>
+    </form>
+{% endblock %}

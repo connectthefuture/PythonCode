@@ -1,0 +1,13 @@
+{% extends "public/ibase.html" %}
+{% block title %} 初始化表 {% endblock %}
+{% block content %}
+<body>
+    {% if rowc_ount %}
+        {{ rowc_ount }} rows in table {{ table_name }}
+    {% endif %}
+    <form action={{ posturl }} method="POST" role="form">  {% csrf_token %}
+        <table> {{ form.as_table }} </table> <p>
+        <input type="submit" value="Submit"></p>
+    </form>
+</body>
+{% endblock %}

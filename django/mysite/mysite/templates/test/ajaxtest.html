@@ -1,0 +1,210 @@
+{% extends "public/ibase.html" %}
+{% block header %}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var NN = 100;
+        console.log("document readyed");
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<body>
+<script src="/static/js/string.js"></script>
+<script type="text/javascript">
+    var xmlHttp;
+    function ajaxFunction(getpost, url, func) {
+        try {
+            // Firefox, Opera 8.0+, Safari
+            xmlHttp = new XMLHttpRequest();
+        }
+        catch (e) {
+
+            // Internet Explorer
+            try {
+                xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }
+            catch (e) {
+                try {
+                    xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                catch (e) {
+                    alert("您的浏览器不支持AJAX！");
+                    return false;
+                }
+            }
+        }
+        xmlHttp.onreadystatechange = func;
+        xmlHttp.open(getpost, url, true);
+        xmlHttp.send(null);
+    }
+
+    function myform() {
+        if (xmlHttp.readyState == 4) {
+            if (1) {
+                document.myForm.time.value = xmlHttp.responseText;
+            }
+            else {
+                alert(xmlHttp.responseText);
+            }
+        }
+    }
+
+    function xml2sql4ins(tabname, fieldnames, fieldlenghs, fieldinfo) {
+        var sql = 'insert into ' + tabname + ' (' + fieldnames + ') values(';
+        var array = split(fieldlenghs, ',');
+        var tmp;
+        for (var i = 0, j = 0; i < array.length; i++) {
+            val = Number(array[i]);
+            tmp = fieldinfo.substring(j, j + val).replace("'", "");
+            sql += "'" + tmp + "'";
+            if (i != array.length - 1) {
+                sql += ",";
+            }
+            j += val;
+        }
+        sql += ");";
+        return sql;
+    }
+
+    function xml2sql4upd(tabname, fieldnames, fieldlenghs, fieldinfo) {
+        var sql = "update " + tabname + "set ";
+        var array = split(fieldlenghs, ',');
+        var array1 = split(fieldnames, ',');
+        var tmp;
+        for (var i = 0, j = 0; i < array.length; i++) {
+            val = Number(array[i]);
+            key = array1[i];
+            value = fieldinfo.substring(j, j + val);
+            sql += key + "='" + value + "' ";
+            j += val;
+        }
+        sql += "where ";
+
+    }
+
+    function parsexml() {
+        if (xmlHttp.readyState != 4) {
+            return;
+        }
+        parser = new DOMParser();
+        xmlDoc = parser.parseFromString(xmlHttp.responseText, "text/xml");
+        var table_list = xmlDoc.getElementsByTagName("table");
+        var i, j, k;
+        var tabname, fields, fieldlen, row, nodetype, nodename;
+        var array4sql = new Array();
+        var db = window.openDatabase('html5app', '1.0', 'html5app DB', 10 * 1024 * 1024);
+        db.transaction(function (tx) {
+            var creatvocabulary = "CREATE TABLE IF NOT EXISTS vocabulary ( idx varchar(6) NOT NULL PRIMARY KEY, word varchar(30) NOT NULL, explain varchar(256) NOT NULL, level varchar(1) NOT NULL, modifydate varchar(8) NOT NULL, modifytime varchar(6) NOT NULL, status varchar(1) NOT NULL)";
+            tx.executeSql(creatvocabulary);
+        })
+
+        for (var i = 0; i < table_list.length; i++) {
+            j = 0;
+            for (j = 0; j < table_list[i].childNodes.length; j++) {
+                try {
+                    nodetype = table_list[i].childNodes[j].nodeType;
+                    nodename = table_list[i].childNodes[j].nodeName;
+                    if (nodetype == 1) {
+                        if (nodename.indexOf('_tabname') >= 0) {
+                            tabname = table_list[i].childNodes[j].firstChild.nodeValue;
+                        } else if (nodename.indexOf('_fields') >= 0) {
+                            fields = table_list[i].childNodes[j].firstChild.nodeValue;
+                        } else if (nodename.indexOf('_row') >= 0) {
+                            row = table_list[i].childNodes[j].firstChild.nodeValue;
+                        } else if (nodename.indexOf('_fieldlen') >= 0) {
+                            fieldlen = table_list[i].childNodes[j].firstChild.nodeValue;
+                        }
+                    } else if (nodetype == 3) {
+
+                    }
+
+                } catch (e) {
+                    alert(e);
+                }
+            }
+            sql = xml2sql4ins(tabname, fields, fieldlen, row);
+            array4sql[i] = sql;
+//            console.log(sql);
+        }
+//        return;
+        db.transaction(
+                function (tx) {
+                    for (var k = 0; k < array4sql.length; k++) {
+                        sql = array4sql[k];
+                        tx.executeSql(sql);
+                    }
+                }
+        );
+
+
+//        x = 0;
+//        for (; x < array4sql.length; x++) {
+////            foo();
+//            db.transaction(function (tx) {
+//                console.log(x);
+//                sql = array4sql[x];
+//                console.log(sql);
+//                tx.executeSql(sql);
+//            });
+//            console.log(x);
+//        }
+    }
+
+    function foo() {
+        console.log(x);
+    }
+
+    function ajaxtest() {
+        var db;
+        db = window.openDatabase('html5app', '1.0', 'html5app DB', 10 * 1024 * 1024);
+        db.transaction(function (tx) {
+            tx.executeSql("SELECT count(*) AS total FROM Vocabulary", [], function (tx, results) {
+                var len = results.rows.length, i;
+                msg = results.rows.item(0)['total'];
+                alert(msg);
+            }, null);
+        });
+    }
+
+    function showdata() {
+        var db = window.openDatabase('html5app', '1.0', 'html5app DB', 10 * 1024 * 1024);
+        if (db == null) {
+            alert("open db failed");
+            return;
+        }
+        db.transaction(function (tx) {
+            tx.executeSql("SELECT count(*) AS total FROM vocabulary", [],
+                    function (tx, results) {
+                        var len = results.rows.length, i;
+                        msg = results.rows.item(0)['total'];
+                        alert(msg);
+                        document.getElementById("aa").innerHTML = msg;
+                    },
+                    function (tx, error) {
+                        alert(error.message);
+                    });
+        });
+    }
+</script>
+
+<form name="myForm">
+    用户: <input type="text" name="username" onkeyup="ajaxFunction('GET', '/foo', myform);"/>
+    时间: <input type="text" name="time"/>
+</form>
+<p/>
+
+<p/>
+<button type="button" onclick="ajaxtest()">ajaxtest</button>
+<p/>
+
+<p/>
+<button type="button" onclick="ajaxFunction('GET', '/getxml', parsexml)">ajaxFunction</button>
+<p/>
+<button type="button" onclick="showdata()">showdata</button>
+<p/>
+
+<div id="aa">bb</div>
+</body>
+{% endblock %}
+        

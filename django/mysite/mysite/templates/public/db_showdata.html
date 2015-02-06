@@ -1,0 +1,43 @@
+{% extends "public/ibase.html" %}
+{% block title %} showdata {% endblock %}
+{% block content %}
+<body onclick="foo()">
+<script type="text/javascript">
+    {% if translate %}
+    function foo() {
+        var selected = window.getSelection();
+        if (selected.toString().length > 0) {
+            word = selected.toString().trim();
+            if (word.length > 30) {
+                return;
+            }
+            $.get("/gettranslate/?q=" + word, function(result){
+                console.log(word);
+                alert(result.replace(';', '\n'));
+            });
+//            selected.removeAllRanges();
+        }
+    }
+    {% else %}
+        function foo(){}
+    {% endif %}
+</script>
+
+<div class="container">
+    <table class="table table-bordered">
+        <tr>{% for field in fieldset %}
+            <td>{{ field }}</td>
+            {% endfor %}
+        </tr>
+        {% for row in queryset %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            {% for col in row %}
+            <td>{{ col }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+{% endblock %}

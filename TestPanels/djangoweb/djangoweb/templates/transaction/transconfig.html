@@ -1,0 +1,74 @@
+{% extends "public/base.html" %}
+{% block header%}
+<title>交易配置</title>
+{% endblock %}
+{% block content %}
+<body>
+<div class="container">
+
+    <ul class="breadcrumb">
+        <li><a href="/project/{{ project }}">项目</a> <span class="divider">{{ project }}</span></li>
+        <li><a href="#">交易代码</a> <span class="divider"> {{ transcode }}</span></li>
+    </ul>
+
+    <!--<form class="form-horizontal" method="POST" action="/postservice/addproject/">-->
+    <form role="form" class="form-horizontal" action="/postservice/addtransconfig/" method="POST">
+        <input type="hidden" name="project" value="{{ project }}">
+        <input type="hidden" name="transcode" value="{{ transcode }}">
+
+        <div class="form-group">
+            <!--<label for="haspycode" class="col-sm-1 control-label">python</label>-->
+
+            <!--<div class="col-md-4">-->
+                <!--<select class="form-control input-sm" name="haspycode" id="haspycode">-->
+                    <!--<option value="1">是</option>-->
+                    <!--<option value="0">否</option>-->
+                <!--</select>-->
+            <!--</div>-->
+        <!--</div>-->
+        <div class="form-group">
+            <label for="pysourcecode" class="col-sm-1 control-label">PY代码</label>
+
+            <div class="col-md-4">
+                <!--<input type="text"  class="form-control input-sm" name="pysourcecode" id="pysourcecode" placeholder="">-->
+                <textarea rows="20" cols="80" name="pysourcecode" id="pysourcecode">{{ pysourcecode }}</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-1 col-md-1">
+                <button type="submit" class="btn btn-sm">提交</button>
+            </div>
+            <div class="col-sm-offset-1 col-md-1">
+                <!--<button type="submit" class="btn btn-sm" onclick="window.location.href('/project/')">返回</button>-->
+                <!--<button type="submit" class="btn btn-sm" onclick="window.history.back(-1)">返回</button>-->
+                <button type="button" class="btn btn-sm" onclick="window.location.href='/project/{{ project }}'">返回</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <tr>{% for field in fielddesc %}
+            <td>{{ field }}</td>
+            {% endfor %}
+        </tr>
+        {% for row in queryset %}
+        <tr>
+            <!--<td>{{ forloop.counter }}</td>-->
+            {% for col in row %}
+            {% if forloop.counter == 1 %}
+            <td><a href="/project/{{ project }}/{{ col }}/">{{ col }}</a></td>
+            {% elif forloop.counter == 2 %}
+            <td><a href="/project/{{ col }}">{{ col }}</a></td>
+            {% elif forloop.counter == 5 %}
+            <td><a href="{{ col }}">modify</a></td>
+            {% else %}
+            <td>{{ col }}</td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<!-- /container -->
+</body>
+{% endblock  %}

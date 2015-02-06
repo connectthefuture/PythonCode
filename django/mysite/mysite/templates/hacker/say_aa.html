@@ -1,0 +1,8 @@
+{% extends "public/ibase.html" %}
+{% load humanize %}
+{% block title %} 初始化表 {% endblock %}
+{% block content %}
+    <a href={{ url | escape }}>yoo</a><p/>
+    {{ 1 | apnumber }}<p/>
+    {{ 10234 | intcomma }}<p/>
+{% endblock %}

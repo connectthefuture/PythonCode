@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <script type="text/javascript">
+
+    </script>
+
+</head>
+<body>
+<!--<p style="color: sienna; margin-left: 20px">-->
+<!--This is a paragraph-->
+<!--</p>-->
+<script type="text/javascript">
+var str="Hello world!"
+var URIstring = "http://www.baidu.com/哈哈";
+document.write(encodeURI("http://www.w3school.com.cn/My first/"));
+document.write("<br/>");
+document.write(encodeURI("http://www.w3school.com.cn/My first/"));
+document.write("<br/>");
+var d = new Date();
+document.write(d.getTime() + " milliseconds since 1970/01/01");
+document.write("<br/>");
+var txt="Hello World!";
+document.write(txt.length);
+document.write("<br/>");
+document.write(str.indexOf("Hello") + "<br />")
+document.write(str.match("world") + "<br />")
+var str="Visit Microsoft!"
+document.write(str.replace(/Microsoft/,"W3School" + "<br/>"))
+document.write(txt.toUpperCase() + "<br/>")
+
+if(! sessionStorage.test5date){
+    var d = new Date();
+    sessionStorage.test5date = d.getTime();
+}
+document.write(sessionStorage.test5date + '<br/>');
+if(! localStorage.test5date){
+    var d = new Date();
+    localStorage .test5date = d.getTime();
+}
+document.write(localStorage .test5date);
+
+</script>
+</body>
+</html>

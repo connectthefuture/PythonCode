@@ -1,0 +1,16 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="utf-8">
+<head>
+    Welcome {{ ID_USER }} <p/>
+    <a href="/accounts/logout">退出登录</a>
+       <title>
+           {% block title %}{% endblock %}
+       </title>
+</head>
+<body>
+    <h1></h1>
+    {% block content %}{% endblock %} {% block footer %}
+    <hr> <p>Thanks for visiting my site.</p>
+    {% endblock %}
+</body>
+</html>

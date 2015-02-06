@@ -1,0 +1,19 @@
+{% extends "public/ibase.html" %}
+{% block header %}
+
+<script type="text/javascript">
+var dropsql = "drop table vocabulary";
+var creatvocabulary = "CREATE TABLE IF NOT EXISTS vocabulary ( idx varchar(6) NOT NULL PRIMARY KEY, word varchar(30) NOT NULL, explain varchar(256) NOT NULL, level varchar(1) NOT NULL, modifydate varchar(8) NOT NULL, modifytime varchar(6) NOT NULL, status varchar(1) NOT NULL)";
+//var creatvocabulary1 = "CREATE TABLE vocabulary ( idx varchar(6) NOT NULL PRIMARY KEY, word varchar(30) NOT NULL, explain varchar(256) NOT NULL, level varchar(1) NOT NULL, modifydate varchar(8) NOT NULL, modifytime varchar(6) NOT NULL, status varchar(1) NOT NULL)";
+var db = window.openDatabase('html5app', '1.0', 'html5app DB', 10 * 1024 * 1024);
+db.transaction(function (tx) {
+    try {
+        tx.executeSql(dropsql);
+        tx.executeSql(creatvocabulary);
+        console.log('creatvocabulary');
+    }catch (e) {
+        alert(e);
+    }
+});
+</script>
+{% endblock %}

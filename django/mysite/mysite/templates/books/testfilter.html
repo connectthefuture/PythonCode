@@ -1,0 +1,7 @@
+{% extends "public/ibase.html" %}
+{% load ifilter %}
+{% block title %} TEST1 {% endblock %}
+{% block content %}
+    {{ app | yoo}}<p/>
+    {{ app | foobar:"_foobar"}}
+{% endblock %}

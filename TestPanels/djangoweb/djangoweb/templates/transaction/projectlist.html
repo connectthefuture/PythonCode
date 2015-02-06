@@ -1,0 +1,106 @@
+{% extends "public/base.html" %}
+{% block header %}
+<title>项目列表</title>
+{% endblock %}
+{% block content %}
+<body>
+<script type="text/javascript">
+    function getproject() {
+        var e = document.getElementById('project');
+        var data = JSON.stringify({project: e.value});
+        $.ajax({
+            type: "post",
+            async: false,
+            data: data,
+            url: "/ajaxservice/1000/",
+            dataType: "text",
+            success: function (data) {
+                var obj = JSON.parse(data);
+                if (obj['RspCode'] == "0000") {
+                    $("#msgtype")[0].value = obj['msgtype']
+                    $("#trancodexpath")[0].value = obj['trancodexpath']
+                    $("#serialnoxpath")[0].value = obj['serialnoxpath']
+                    $("#projectname")[0].value = obj['projectname']
+                }else{
+                    console.log("not equals");
+                }
+            }
+        });
+    }
+
+</script>
+<div class="container">
+    <ul class="breadcrumb">
+        <li><a href="/project">项目</a> <span class="divider">/</span></li>
+    </ul>
+    <!--<form class="form-horizontal" method="POST" action="/postservice/addproject/">-->
+    <form role="form" class="form-horizontal" action="/postservice/addproject/" method="POST">
+        <div class="form-group">
+            <label for="project" class="col-sm-1 control-label">项目代码</label>
+
+            <div class="col-md-4">
+                <input type="text" class="form-control input-sm" name="project" id="project" onblur="getproject()"
+                       placeholder="">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="projectname" class="col-sm-1 control-label">项目名称</label>
+
+            <div class="col-md-4">
+                <input type="text" class="form-control input-sm" name="projectname" id="projectname" placeholder="">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="msgtype" class="col-sm-1 control-label">报文类型</label>
+
+            <div class="col-md-4">
+                <select class="form-control input-sm" name="msgtype" id="msgtype">
+                    <option value="1">xml</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="trancodexpath" class="col-sm-1 control-label">交易码XPATH</label>
+
+            <div class="col-md-4">
+                <input type="text" class="form-control input-sm" name="trancodexpath" id="trancodexpath" placeholder="">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="serialnoxpath" class="col-sm-1 control-label">流水号XPATH</label>
+
+            <div class="col-md-4">
+                <input type="text" class="form-control input-sm" name="serialnoxpath" id="serialnoxpath" placeholder="">
+            </div>
+        </div>
+        <div class="form-group">
+            <!--<div class="col-sm-offset-2 col-sm-10">-->
+            <div class="col-sm-offset-1 col-md-1">
+                <button type="submit" class="btn btn-sm">新增</button>
+                <!--<button type="button" class="btn btn-sm">新增</button>-->
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <tr>{% for field in fielddesc %}
+            <td>{{ field }}</td>
+            {% endfor %}
+        </tr>
+        {% for row in queryset %}
+        <tr>
+            <!--<td>{{ forloop.counter }}</td>-->
+            {% for col in row %}
+            {% if forloop.first %}
+            <td><a href="/project/{{ col }}">{{ col }}</a></td>
+            {% else %}
+            <td>{{ col }}</td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<!-- /container -->
+</body>
+{% endblock  %}

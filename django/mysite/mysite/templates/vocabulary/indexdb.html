@@ -1,0 +1,68 @@
+{% extends "public/ibase.html" %}
+{% block content %}
+<body>
+<script src="/static/js/string.js"></script>
+<script type="text/javascript">
+var request = window.indexedDB.open("CandyDB", "My candy store database");
+request.onsuccess = function (event) {
+    var db = event.result;
+    if (db.version != "1") {
+        // User's first visit, initialize database.         var createdObjectStoreCount = 0;
+        var objectStores = [{ name: "kids", keyPath: "id", autoIncrement: true },
+        { name: "candy", keyPath: "id", autoIncrement: true },
+        { name: "candySales", keyPath: "", autoIncrement: true}];
+
+        function objectStoreCreated(event) {
+            if (++createdObjectStoreCount == objectStores.length) {
+                db.setVersion("1").onsuccess = function (event) {
+                    loadData(db);
+                };
+            }
+        }
+
+        for (var index = 0; index < objectStores.length; index++) {
+            var params = objectStores[index];
+            request = db.createObjectStore(params.name, params.keyPath, params.autoIncrement);
+            request.onsuccess = objectStoreCreated;
+        }
+    }
+    else {
+        // User has been here before, no initialization required.         loadData(db);
+        alert('no init data');
+    }
+};
+
+</script>
+
+<div class="container">
+    <form role="form" class=".form-inline">
+        <div class="form-group">
+            <label for="text_word">单词</label>
+            <input type="text" class="form-control" id="text_word" value="" readonly>
+        </div>
+        <div class="form-group">
+            <label for="text_explain">例句</label>
+            <!--<input type="textarea" class="form-control" id="text_explain" value="" rows="3" readonly>-->
+            <textarea class="form-control" id="text_explain" rows="4"></textarea>
+
+        </div>
+
+        <div class="form-group">
+            <label for="select_complex">难度</label>
+            <select class="form-control" id="select_complex">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+            </select>
+        </div>
+        <!--<button type="submit" class="btn btn-default" onclick="foo()">Save</button>-->
+
+    </form>
+    <p/>
+
+    <div>
+        <button class="btn btn-default" onclick="getword()">Next</button>
+    </div>
+</div>
+</body>
+{% endblock %}
