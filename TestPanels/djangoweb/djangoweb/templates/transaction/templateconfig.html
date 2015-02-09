@@ -42,13 +42,13 @@
         </tr>
         {% for row in queryset %}
         <tr>
-            <!--<td>{{ forloop.counter }}</td>-->
+            <!--<td>{{ loop.counter }}</td>-->
             {% for col in row %}
-            {% if forloop.counter == 1 %}
+            {% if loop.counter == 1 %}
             <td><a href="/project/{{ project }}/{{ col }}/">{{ col }}</a></td>
-            {% elif forloop.counter == 2 %}
+            {% elif loop.counter == 2 %}
             <td><a href="/project/{{ col }}">{{ col }}</a></td>
-            {% elif forloop.counter == 5 %}
+            {% elif loop.counter == 5 %}
             <td><a href="{{ col }}">modify</a></td>
             {% else %}
             <td>{{ col }}</td>

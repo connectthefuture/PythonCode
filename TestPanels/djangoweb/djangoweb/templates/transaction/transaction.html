@@ -73,17 +73,17 @@
         </tr>
         {% for row in queryset %}
         <tr>
-            <!--<td>{{ forloop.counter }}</td>-->
+            <!--<td>{{ loop.counter }}</td>-->
             {% for col in row %}
-            {% if forloop.counter == 1 %}
-            <td><a href="/project/{{ project }}/{{ col }}/">{{ col }}</a></td>
-            {% elif forloop.counter == 2 %}
-            <td>{{ col }}</td>
-            {% elif forloop.counter == 5 %}
-            <td><a href="{{ col }}">modify</a></td>
-            {% else %}
-            <td>{{ col }}</td>
-            {% endif %}
+                {% if loop.index == 1 %}
+                    <td><a href="/project/{{ project }}/{{ col }}/">{{ col }}</a></td>
+                {% elif loop.index == 2 %}
+                    <td>{{ col }}</td>
+                {% elif loop.index == 5 %}
+                    <td><a href="{{ col }}">modify</a></td>
+                {% else %}
+                    <td>{{ col }}</td>
+                {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}

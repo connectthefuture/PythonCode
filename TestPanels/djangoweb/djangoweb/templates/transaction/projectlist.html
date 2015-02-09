@@ -89,13 +89,13 @@
         </tr>
         {% for row in queryset %}
         <tr>
-            <!--<td>{{ forloop.counter }}</td>-->
+            <!--<td>{{ loop.counter }}</td>-->
             {% for col in row %}
-            {% if forloop.first %}
-            <td><a href="/project/{{ col }}">{{ col }}</a></td>
-            {% else %}
-            <td>{{ col }}</td>
-            {% endif %}
+                {% if loop.first %}
+                    <td><a href="/project/{{ col }}">{{ col }}</a></td>
+                {% else %}
+                    <td>{{ col }}</td>
+                {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}

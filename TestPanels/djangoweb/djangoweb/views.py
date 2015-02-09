@@ -1,4 +1,5 @@
-# coding=utf8
+# coding=utf-8
+from __future__ import unicode_literals
 # import time
 # import csv
 # import json
@@ -10,21 +11,28 @@
 # from django.contrib.auth.views import login
 # from django.core.mail import send_mail
 # from django.template import loader, Context, RequestContext
-# import StringIO
-# import urllib2
-# import BeautifulSoup
 import datetime
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
+# from django.shortcuts import render_to_response
 import logging
 import models
 import os
 import toolutils
 from toolutils import needlogin
 
+
+def render_to_response(templatename, dictionary={}, ):
+    template = tmplateenv.get_template(templatename)
+    return HttpResponse(template.render(dictionary))
+
+
+from jinja2 import Environment, PackageLoader
+
 logger = logging.getLogger("djangoweb.app")
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
+
+tmplateenv = Environment(loader=PackageLoader('djangoweb'))
 
 
 def login(request):
@@ -33,7 +41,7 @@ def login(request):
         if not request.session.get('UserName') is None:
             return HttpResponseRedirect('/project')
         else:
-            return render_to_response('public/hello.html')
+            return render_to_response('public/hello.html', {})
     else:
         kv = dict(request.POST.items())
         username = kv['UserName']
@@ -143,7 +151,7 @@ def xmlservice(request, project):
 
 
 def bootstrap(request):
-    return render_to_response('bootstrap/1.html')
+    return render_to_response('bootstrap/1.html', {'a': u'这个'})
 
 
 def readfile(fname):

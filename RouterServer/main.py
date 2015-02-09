@@ -23,3 +23,5 @@ def foo(end):
 
 if __name__ == '__main__':
     foo('\r\n\n')
+    import urllib2
+    import urllib
