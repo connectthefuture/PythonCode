@@ -13,26 +13,16 @@ from __future__ import unicode_literals
 # from django.template import loader, Context, RequestContext
 import datetime
 from django.http import HttpResponse, HttpResponseRedirect
-# from django.shortcuts import render_to_response
-import logging
 import models
 import os
 import toolutils
 from toolutils import needlogin
+import base
+from base import render_to_response
 
-
-def render_to_response(templatename, dictionary={}, ):
-    template = tmplateenv.get_template(templatename)
-    return HttpResponse(template.render(dictionary))
-
-
-from jinja2 import Environment, PackageLoader
-
-logger = logging.getLogger("djangoweb.app")
+logger = base.logger
 
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
-
-tmplateenv = Environment(loader=PackageLoader('djangoweb'))
 
 
 def login(request):

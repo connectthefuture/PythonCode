@@ -47,7 +47,15 @@ class DataMap(models.Model):
     value6 = models.CharField(max_length=20)
 
 class TranLog(models.Model):
+    LOG_TYPES=(
+        ('1', "HELLO"),
+        ('2', "WORLD")
+    )
     project = models.CharField(max_length=6)
     serno = models.CharField(max_length=20)
     transcode = models.CharField(max_length=6)
+    logtype = models.CharField(max_length=1, choices=LOG_TYPES)
     errormsg = models.CharField(max_length=256)
+    class Meta:
+        db_table = 't_TranLog'
+        unique_together = ("project", "serno")

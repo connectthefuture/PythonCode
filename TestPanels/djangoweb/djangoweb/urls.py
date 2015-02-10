@@ -26,4 +26,7 @@ urlpatterns = patterns('',
                        url(r'^bootstrap/$', u'djangoweb.views.bootstrap'),
                        url(r'^xmlservice/(\w+)/$', u'djangoweb.views.xmlservice'),
                        url(r'^ajaxservice/(\w+)/$', u'djangoweb.ajaxservice.ajaxservice'),
+                       url(r'^requesttest/$', u'djangoweb.studyview.requesttest'),
+                       url(r'^modeltest/$', u'djangoweb.studyview.modeltest'),
+                       url(r'^rawsql/$', u'djangoweb.studyview.rawsql'),
 )
