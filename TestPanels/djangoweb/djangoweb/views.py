@@ -19,6 +19,7 @@ import toolutils
 from toolutils import needlogin
 import base
 from base import render_to_response
+from djangolib import sqllib
 
 logger = base.logger
 
@@ -56,12 +57,21 @@ def logout(request):
 
 @needlogin
 def projectlist(request):
-    c = {}
-    c['fielddesc'] = ['项目代码', '项目名称', '报文类型', '交易码XPATH', '流水号XPATH']
-    c['fields'] = ['project', 'projectname', 'msgtype', 'trancodexpath', 'serialnoxpath']
-    queryset = models.ProjectDef.objects.all()
-    rows = [[getattr(q, field) for field in c['fields']] for q in queryset]
-    c['queryset'] = rows
+    if 0:
+        c = {}
+        c['fielddesc'] = ['项目代码', '项目名称', '报文类型', '交易码XPATH', '流水号XPATH', '监听端口', '服务器类型']
+        c['fields'] = ['project', 'projectname', 'msgtype', 'trancodexpath', 'serialnoxpath', 'listenport', 'servtype']
+        queryset = models.ServerDefine.objects.all()
+        rows = [[getattr(q, field) for field in c['fields']] for q in queryset]
+        c['queryset'] = rows
+    else:
+        c = {}
+        c['fielddesc'] = ['项目代码', '项目名称', '报文类型', '交易码XPATH', '流水号XPATH', '监听端口', '服务器类型']
+        c['fields'] = ['project', 'projectname', 'msgtype', 'trancodexpath', 'serialnoxpath', 'listenport', 'servtype']
+        sql = '''select a.project, a.projectname, a.msgtype, a.trancodexpath, a.serialnoxpath, b.listenport, b.servtype
+                from t_projectdef a, t_serverdefine b where a.project = b.project'''
+        rows = sqllib.select(sql)
+        c['queryset'] = rows
     return render_to_response('transaction/projectlist.html', c)
 
 
@@ -74,10 +84,14 @@ def addproject(request):
         msgtype = kv['msgtype']
         trancodexpath = kv['trancodexpath']
         serialnoxpath = kv['serialnoxpath']
-        o = models.ProjectDef(project=project.lower(), projectname=projectname, msgtype=msgtype,
+        servtype = kv['servtype']
+        listenport = kv['listenport']
+        p = models.ProjectDef(project=project.lower(), projectname=projectname, msgtype=msgtype,
                               trancodexpath=trancodexpath, serialnoxpath=serialnoxpath)
-        o.save()
-        return HttpResponseRedirect('/project/')
+        p.save()
+        s = models.ServerDefine(project=project.lower(), servtype=servtype, listenport=listenport)
+        s.save()
+        return projectlist(request)
 
 
 @needlogin
@@ -169,7 +183,7 @@ def addtransconfig(request):
     logger.debug(fname)
     with open(fname, 'w') as fd:
         fd.write(kv['pysourcecode'].replace("\r", ""))
-    return HttpResponseRedirect("/project/%s/%s/" % (kv['project'], kv['transcode']))
+    return transconfig(request, ['project'], kv['transcode'])
 
 
 def datamaplist(request, ):
@@ -196,4 +210,4 @@ def addtemplate(request):
         fname = os.path.join(templatedir, "%s_%s_%s.html" % (kv['project'], kv['transcode'], kv['template']))
         with open(fname, 'w') as fd:
             fd.write(kv['templatecontent'].replace("\r", ""))
-        return HttpResponseRedirect("/project/%s/%s/%s/" % (kv['project'], kv['transcode'], kv['template']))
+        return templateconfig(request, kv['project'], kv['transcode'], kv['template'])

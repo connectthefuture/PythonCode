@@ -11,3 +11,4 @@ if __name__ == "__main__":
     httpproxy = tcphandlerdefine.HttpProxyHandler
     server = ThreadedTCPServer((HOST, PORT), tcphandlerdefine.HttpProxyHandler)
     server.serve_forever()
+    server.shutdown()
