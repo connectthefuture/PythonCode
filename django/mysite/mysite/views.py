@@ -311,6 +311,8 @@ def template_proc1(request):
 def template_filter(request):
     return render_to_response('books/testfilter.html', {'app': 'app'})
 
+def xmlservice(request):
+    pass
 
 def rss(request):
     pass

@@ -1,4 +1,4 @@
-import tcphandlerdefine
+import tcphandler
 import SocketServer
 
 
@@ -7,8 +7,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
 
 if __name__ == "__main__":
-    HOST, PORT = "", 8081
-    httpproxy = tcphandlerdefine.HttpProxyHandler
-    server = ThreadedTCPServer((HOST, PORT), tcphandlerdefine.HttpProxyHandler)
+    HOST, PORT = "", 8087
+    server = ThreadedTCPServer((HOST, PORT), tcphandler.HttpProxyHandler)
     server.serve_forever()
     server.shutdown()

@@ -42,31 +42,30 @@ def readNbit(fd, N):
     buf.close()
     return rs
 
-def readByStr(fd, s):
-    # sio = StringIO.StringIO()
-    buf = ""
-    N = len(s)
-    while True:
-        ch = fd.read(1)
-        if ch == "":
-            return buf
-        else:
-            buf += ch
-            if buf[-N:] == s:
-                return buf
-
 def recvByStr(sock, s):
     # sio = StringIO.StringIO()
-    buf = ""
-    N = len(s)
-    while True:
-        ch = sock.recv(1)
-        if ch == "":
-            return buf
-        else:
-            buf += ch
-            if buf[-N:] == s:
-                return buf
+    try:
+        buf = ""
+        N = len(s)
+        lastN = ""
+        sio = StringIO.StringIO()
+        while 1:
+            ch = sock.recv(1)
+            if ch == "":
+                buf = sio.getvalue()
+                break
+            else:
+                sio.write(ch)
+                if N != 1:
+                    lastN = lastN[-1 * (N - 1):] + ch
+                else:
+                    lastN = ch
+                if lastN == s:
+                    buf = sio.getvalue()
+                    break
+        return buf
+    finally:
+        sio.close()
 
 
 def recvFull(sock):

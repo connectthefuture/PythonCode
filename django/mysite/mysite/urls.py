@@ -98,14 +98,12 @@ urlpatterns = patterns('',
                        url(r'^getjson/$', u'mysite.views.getjson', ),
                        url(r'^gettranslate/$', u'mysite.views.gettranslate'),
 
-                       #chinadaily
-                       url(r'^fetchchinadaily/$', u'mysite.views.fetchchinadaily'),
-                       url(r'^getchinadaily/$', u'mysite.views.getchinadaily'),
+                       # url(r'^fetchchinadaily/$', u'mysite.views.fetchchinadaily'),
+                       # url(r'^getchinadaily/$', u'mysite.views.getchinadaily'),
+                       #
+                       # url(r'^getweather/$', u'mysite.views.getweather'),
+                       #
+                       # url(r'^testpanels/$', u'mysite.views.getxml'),
 
-                       url(r'^getweather/$', u'mysite.views.getweather'),
-
-                       url(r'^testpanels/$', u'mysite.views.getxml'),
-
-                       # 后台服务
-                       url(r'^xmlservice/(\w+)/(\w+)/$', u'mysite.views.xmlservice'),
+                       # url(r'^xmlservice/(\w+)/(\w+)/$', u'mysite.views.xmlservice'),
 )
