@@ -9,6 +9,7 @@ import cStringIO as StringIO
 import logutils
 import sys
 import os
+from urlparse import urlparse
 
 from HttpMsg import HttpMsg
 import toollib, socketlib, urlutils
