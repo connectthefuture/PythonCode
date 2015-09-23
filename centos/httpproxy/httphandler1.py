@@ -9,6 +9,7 @@ import cStringIO as StringIO
 import logutils
 import sys
 import os
+import ssl
 from urlparse import urlparse
 
 from HttpMsg import HttpMsg
@@ -21,20 +22,28 @@ class HttpProxyHandler(SocketServer.BaseRequestHandler):
             '[%(levelname)-8s][%(_filename)-20s%(_lineno)06d][%(serialno)s][%(message)s]'))
         SocketServer.BaseRequestHandler.__init__(self, *args, **kwargs)
 
-    def socketrequest2(self, ip, port, msg):
+    def socketrequest2(self, ip, port, msg, schema='http'):
         try:
+            port = int(port)
+            self.info("%s %d %s" % (ip, port, schema))
             sock = socket.socket()
+            if schema.lower() == 'https' or port == 443:
+                sock = ssl.wrap_socket(sock, cert_reqs=ssl.CERT_NONE, ca_certs=None)
             sock.connect((ip, port))
             sock.sendall(msg)
             head = socketlib.recvByStr(sock, '\r\n\r\n')
+            self.info(str(head))
             hm = HttpMsg(head)
             option = hm.getoption()
-            length = option.get('Content-Length', None)
+            length = option.get('Content-Length', 0)
             if length:
                 body = socketlib.recvNbit(sock, int(length))
             else:
                 body = self.readchunk(sock)
+            self.info(body)
             return head + body
+        except Exception as e:
+            self.error(traceback.format_exc())
         finally:
             sock.close()
 
@@ -70,10 +79,11 @@ class HttpProxyHandler(SocketServer.BaseRequestHandler):
                 send = sendhead
             host, port = hm.gethost(option)
             self.info("host=%s, port=%s" % (str(host), str(port)))
-            for url in urlutils.resolveurl(host):
-                recv = self.socketrequest2(host, port, send)
-                self.request.sendall(recv)
-                break
+            parseResult = urlparse(requesturl)
+            # for url in urlutils.resolveurl(host):
+            recv = self.socketrequest2(host, port, send, 'http' if parseResult.scheme == '' else parseResult.scheme)
+            self.request.sendall(recv)
+            # break
         except KeyboardInterrupt as kie:
             sys.exit(0)
         except Exception as e:
