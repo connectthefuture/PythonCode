@@ -1,0 +1,536 @@
+SNAIL_ID=0
+TMPDIR=$HOME/snail/TMP
+LOGDIR=$HOME/snail/LOG
+
+RMTDIR=$HOME/snail
+OPTDIR=$HOME
+
+DBNAME=afa
+DBUSER=afa
+DBPWD=afa
+
+
+
+###################################################################################
+DirChk()
+{
+    cd $RMTDIR
+    if [ -d $1 ] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+##################################################################################
+DirChk $TMPDIR
+if [ $? -ne 0 ] ; then
+    mkdir $TMPDIR
+fi
+
+DirChk $LOGDIR
+if [ $? -ne 0 ] ; then
+    mkdir $LOGDIR
+fi
+#####################################################################################
+StepChk()
+{
+    grep "$1"  $2  >>/dev/null
+    if [ $? -ne 0 ] ; then
+        #未处理完成
+        return 0
+    else
+        #已处理完成
+        return 1
+    fi
+}
+
+####################################################################################
+sub1(){
+echo  "\t\n"
+echo  "\t-----------------------------------------------"
+echo  "\t|                                             |"
+echo  "\t|       请保证配置正确：                      |"
+echo  "\t|       1.RMTDIR                              |"
+echo  "\t|       2.OPTDIR                              |"
+echo  "\t|       3.ftpget中ftp地址用户                 |"
+echo  "\t|       需要文件:                             |"
+echo  "\t|       1.snail                               |"
+echo  "\t|       2.ftpget                              |"
+echo  "\t|       日志文件：                            |"
+echo  "\t|       1./snail/LOG/yyyymmdd_ftp.log         |"
+echo  "\t|       2./snail/LOG/问题单号_proc.log        |"
+echo  "\t|       端口配置文件：             	         |"
+echo  "\t|       1./etc/ports                          |"
+echo  "\t|                                             |"
+echo  "\t-----------------------------------------------"
+echo "按回车键继续......"
+return 0
+}
+
+#################################################################################
+sub0(){
+ 	echo  "请输入问题单号:\c"
+          read SNAIL_ID
+          if [ $SNAIL_ID q 0   ]
+                then
+                echo "请输入问题单号!"
+                return 1
+          else
+        	PROCLOG=$LOGDIR/${SNAIL_ID}_proc.log
+		DBLOG=$LOGDIR/${SNAIL_ID}_db.log
+              DirChk $SNAIL_ID
+              if [ $? -ne 0 ]; then
+		cd $RMTDIR
+                mkdir $SNAIL_ID
+		echo  "">$PROCLOG
+		echo  "">$DBLOG
+		echo "">$SNAIL_ID/$SNAIL_ID.dbout
+              fi
+
+          fi
+return 0
+}
+##############################################################################
+#############################################################################
+sub2(){
+ echo "读取变更清单........"
+ cd $RMTDIR/$SNAIL_ID
+  ftpget  $RMTDIR/${SNAIL_ID}  ${SNAIL_ID}.sql $LOGDIR
+  ftpget  $RMTDIR/${SNAIL_ID}  ${SNAIL_ID}.lst $LOGDIR
+ cd ..
+
+if [ ! -f $RMTDIR/${SNAIL_ID}/${SNAIL_ID}.lst ]
+ then
+ echo "读取变更清单失败!"
+else
+ echo "读取变更清单${SNAIL_ID}.lst成功"
+ fi
+
+if [  -f $RMTDIR/${SNAIL_ID}/${SNAIL_ID}.sql ]
+ then
+ echo "读取数据库执行清单${SNAIL_ID}.sql成功"
+ fi
+
+ echo "按回车键继续......"
+ read AA
+
+if [  -f $RMTDIR/${SNAIL_ID}/${SNAIL_ID}.lst ]
+ then
+ echo "根据变更清单取文件................"
+
+ cd $RMTDIR/$SNAIL_ID
+
+ for line in `cat  $SNAIL_ID.lst`
+  do
+   ele1=`echo $line | awk -F '|' '{print $1 }'`
+   ele2=`echo $line | awk -F '|' '{print $2 }'`
+
+#echo $ele1
+#echo $ele2
+
+   ftpget $RMTDIR/${SNAIL_ID}  $ele2 $LOGDIR
+   echo "读取 $ele2..........完成"
+
+  done
+
+ cd ..
+
+
+ echo "根据变更清单取文件.........完成"
+ echo "按回车键继续......"
+ return 0
+fi
+}
+#####################################################################################################################
+#############################################################################
+sub3(){
+ echo "检查变更单文件是否传到本机........"
+ echo ""
+ #cat ./$SNAIL_ID/$SNAIL_ID.lst | awk -F '|' '{print $2}' | while read line
+ for line in `cat  $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst | awk -F '|' '{print $2}' `
+ do
+  if [ ! -f $RMTDIR/$SNAIL_ID/$line ]
+   then
+    echo   "检查文件$SNAIL_ID/[$line]不存在!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+    return  1
+    break
+   else
+    echo  "检查文件:[$line]**********[OK]"
+   fi
+ done
+
+ echo "按回车键继续......"
+ read AA
+
+ echo "备份本机文件................"
+
+#total=`cat $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst  |wc -l`
+#total=`expr $total + 0`
+#echo "[$total]"
+
+
+
+for line in `cat  $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst`
+ do
+  ele1=`echo $line | awk -F '|' '{print $1 }'`
+  ele2=`echo $line | awk -F '|' '{print $2 }'`
+  file=`echo $line | awk -F '.' '{print $2 }'`
+  if [ $ele1 != "#" ]
+    then
+     if [ ! -f $OPTDIR/$ele1/$ele2 ]
+       then
+         echo   $OPTDIR/$ele1/$ele2"不存在，请确认本次更新是否为新加文件 y/n \c"
+         read YN
+       if [ $YN = "n" ] || [ "$YN" = "N" ]
+         then
+           echo "选择终止本操作!"
+           return 1
+           break
+       else
+         continue
+       fi
+     fi
+
+     cp $OPTDIR/$ele1/$ele2  $RMTDIR/$SNAIL_ID/${ele2}.$SNAIL_ID
+
+    if [ $file = "conf" ] || [ $file = "txt" ]
+      then
+        echo "请手工修改配置文件 ./$SNAIL_ID/${ele2}"
+        cp $OPTDIR/$ele1/$ele2  $RMTDIR/$SNAIL_ID/${ele2}
+    fi
+
+
+
+     if [ ! -f $RMTDIR/$SNAIL_ID/$ele2.$SNAIL_ID ]
+       then
+         echo   "备份文件 $OPTDIR/$ele1/$ele2  到 ./$SNAIL_ID/${ele2}.$SNAIL_ID失败!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+         return 1
+     else
+       echo  "备份文件:$OPTDIR/$ele1/$ele2*********[OK]"
+     fi
+  fi
+done
+echo "按回车键继续......"
+ return 0
+}
+#############################################################################
+sub6(){
+    echo   "请确认是否要回退 y/n \c"
+    read YN
+
+    if [ $YN != "y" ] && [ "$YN" != "Y" ] ; then
+    echo "选择终止本操作!"
+    return 1
+    fi
+
+
+ echo "检查原备份文件........"
+ for line in `cat  $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst `
+ do
+  ele1=`echo $line | awk -F '|' '{print $1 }'`
+  ele2=`echo $line | awk -F '|' '{print $2 }'`
+ if [ $ele1 != "#" ]
+  then
+  if [ ! -f $RMTDIR/$SNAIL_ID/$ele2.$SNAIL_ID ]
+   then
+    echo   "检查原备份文件$SNAIL_ID/[${line}.$SNAIL_ID]不存在!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+    return  1
+    break
+   else
+    echo  "检查原备份文件:[${line}.$SNAIL_ID]**********[OK]"
+  fi
+ fi
+ done
+
+ echo "按回车键继续......"
+ read AA
+
+ echo "从备份还原到本机文件................"
+
+#total=`cat ./$SNAIL_ID/$SNAIL_ID.lst  |wc -l`
+#total=`expr $total + 0`
+#echo "[$total]"
+
+
+for line in `cat  $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst   `
+ do
+  ele1=`echo $line | awk -F '|' '{print $1 }'`
+  ele2=`echo $line | awk -F '|' '{print $2 }'`
+
+#echo $ele1
+#echo $ele2
+
+ if [ $ele1 != "#" ]
+  then
+  cp $RMTDIR/$SNAIL_ID/${ele2}.$SNAIL_ID    $OPTDIR/$ele1/$ele2
+
+  if [ ! -f $OPTDIR/$ele1/$ele2  ]
+   then
+    echo   "回退文件:/$SNAIL_ID/${ele2}.$SNAIL_ID 到 $OPTDIR/$ele1/$ele2 失败!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+    return 1
+   else
+    echo  " 回退文件:/$SNAIL_ID/${ele2}.$SNAIL_ID*********[OK]"
+  fi
+ fi
+
+
+ done
+echo "按回车键继续......"
+ return 0
+}
+###########################################################################
+sub4(){
+ echo "执行更新文件........"
+ echo ""
+
+for line in `cat  $RMTDIR/$SNAIL_ID/$SNAIL_ID.lst   `
+ do
+  ele1=`echo $line | awk -F '|' '{print $1 }'`
+  ele2=`echo $line | awk -F '|' '{print $2 }'`
+  file=`echo $ele2 | awk -F '.' '{print $2 }'`
+
+ if [ $ele1 != "#" ]
+ then
+  cp   $RMTDIR/$SNAIL_ID/${ele2}  $OPTDIR/$ele1/$ele2
+
+#  if [ $file = "conf" ] || [ $file = "txt" ]
+#      then
+#	if [ ! -f /etc/HOSTPORT ]
+#          then
+#           echo   "HOSTPORT文件不存在!!"
+#	    return 1
+#           break
+#        else
+#          for i in `cat /etc/HOSTPORT`
+#              do
+#                  name=`echo $i | awk -F '=' '{print $1 }'`
+#                  port=`echo $i | awk -F '=' '{print $2 }'`
+#                  echo "$OPTDIR/$ele1/$ele2"
+#                  `perl -pi -e  "s/$name/$port/g" $OPTDIR/$ele1/$ele2`
+#                  if [ $? -ne 0 ]
+#                          then
+#                                echo "替换地址或端口$name失败!"
+#                                return 1
+#                  fi
+#              done
+#        fi
+#  fi
+
+  if [ $? -ne 0 ]
+   then
+    echo   "更新 ./$SNAIL_ID/${ele2}   到 $OPTDIR/$ele1/$ele2失败!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+    return 1
+    break
+   else
+    echo  "更新:$OPTDIR/$ele1/$ele2*********[OK]"
+  fi
+ fi
+ done
+echo "按回车键继续......"
+ return 0
+}
+###########################################################################
+sub7(){
+   if [ ! -f $RMTDIR/$SNAIL_ID/${SNAIL_ID}.sql ]
+   then
+    echo   "检查文件$SNAIL_ID/[${SNAIL_ID}.sql]不存在!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+    return  1
+    break
+   else
+    echo  "检查文件:[${SNAIL_ID}.sql]**********[OK]"
+   fi
+
+`perl -pi -e  "s:HOME:$HOME:g" $RMTDIR/$SNAIL_ID/${SNAIL_ID}.sql`
+
+
+ echo "按回车键继续......"
+ read AA
+
+ echo "执行数据库更新................"
+echo `date` "开始执行数据库更新###########################################################################" > $LOGDIR/${SNAIL_ID}_db.log
+echo        "####################################################################################################################################" >> $LOGDIR/${SNAIL_ID}_db.log
+
+db2 " connect to $DBNAME user $DBUSER using $DBPWD " >> $LOGDIR/${SNAIL_ID}_db.log
+if [ $? -ne 0 ]; then
+  return 1
+fi
+
+icount=1
+#for line in `cat  $RMTDIR/$SNAIL_ID/${SNAIL_ID}.sql`
+
+exec 4<>$RMTDIR/$SNAIL_ID/$SNAIL_ID.sql
+while read line <&4
+ do
+   echo "开始执行第{$icount}条命令......................"
+   echo "$line"
+   StepChk $icount $RMTDIR/$SNAIL_ID/$SNAIL_ID.dbout
+   if [ $?  -ne 0 ]
+   then
+	echo   "第{$icount}条命令已经执行成功过，请确认是否重复执行  y/n \c"
+   	 read YN <&0
+	    if [ $YN = "y" ] || [ "$YN" = "Y" ] ; then
+		 echo  "重复执行第{$icount}条命令.......按任意键继续"
+        		read AA<&0
+                 echo "执行第[$icount]条命令开始:........................\n $line " >> $LOGDIR/${SNAIL_ID}_db.log
+                 db2 " $line " >> $LOGDIR/${SNAIL_ID}_db.log
+                 echo "执行第[$icount]条命令结束.....................\n  " >> $LOGDIR/${SNAIL_ID}_db.log
+      		else
+        		echo  "跳过第{$icount}条命令.......按任意键继续"
+        		read AA<&0
+        	fi
+    else
+      echo "执行第[$icount]条命令开始:........................\n $line " >> $LOGDIR/${SNAIL_ID}_db.log
+      db2 " $line " >> $LOGDIR/${SNAIL_ID}_db.log
+      echo "执行第[$icount]条命令结束.....................\n  " >> $LOGDIR/${SNAIL_ID}_db.log
+    fi
+
+
+
+if [ $? -ne 0 ]
+ then
+
+ echo "执行$line 失败!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!![ERR]"
+ return 1
+ break
+else
+ echo "STEP$icount">>$SNAIL_ID/$SNAIL_ID.dbout
+ echo "执行$line 成功...........................................[OK]"
+fi
+
+icount=`expr $icount + 1`
+
+ done
+
+db2 connect reset >> $LOGDIR/${SNAIL_ID}_db.log
+echo "########################################################################################"
+
+echo        "####################################################################################################################################" >> $LOGDIR/${SNAIL_ID}_db.log
+echo `date` "执行数据库更新完毕###########################################################################" >> $LOGDIR/${SNAIL_ID}_db.log
+`perl -pi -e  "s:/home/afa:HOME:g" $RMTDIR/$SNAIL_ID/${SNAIL_ID}.sql`
+echo "详细数据库操作日志在["$LOGDIR/${SNAIL_ID}_db.log"]"
+echo   "是否查看详细数据库操作日志  y/n \c"
+    read YN
+
+    if [ $YN != "y" ] && [ "$YN" != "Y" ] ; then
+     return 0
+    else
+    more $LOGDIR/${SNAIL_ID}_db.log
+    fi
+return 0
+}
+###########################################################################
+sub5(){
+more $LOGDIR/${SNAIL_ID}_proc.log
+return 0
+}
+#######################################################################
+sub0
+if [ $? -ne 0 ]
+         then
+         echo "生成问题单失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "生成问题单失败"
+         exit 1
+         else
+         echo `date`":生成问题单成功">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "生成问题单成功"
+ fi
+########################################################################################
+
+while true
+do
+clear
+echo  "\t\n"
+echo  "\t-----------------------------------------------"
+echo  "\t|                                             |"
+echo  "\t|       1.更新说明                            |"
+echo  "\t|       2.读取变更文件                        |"
+echo  "\t|       3.检查并备份文件                      |"
+echo  "\t|       4.执行更新文件                        |"
+echo  "\t|       5.查看更新结果                        |"
+echo  "\t|       6.更新回退                            |"
+echo  "\t|       7.执行数据库更新                      |"
+echo  "\t|       0.退出                                |"
+echo  "\t|                                             |"
+echo  "\t|                                             |"
+echo  "\t-----------------------------------------------"
+echo  "\t        请选择:  \c"
+read MENU
+case "$MENU" in
+       1) clear
+          sub1
+          read AA
+          ;;
+       2) clear
+	  sub2
+         if [ $? -ne 0 ]
+         then
+         echo `date`"读取变更文件失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "读取变更文件失败"
+         exit
+         else
+         echo `date`":读取变更文件成功">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "读取变更文件成功"
+        fi
+        read AA
+          ;;
+       3) clear
+	  sub3
+          if [ $? -ne 0 ]
+         then
+         echo `date`"检查并备份文件失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "检查并备份文件失败"
+         exit
+         else
+         echo `date`":检查并备份文件成功">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "检查并备份文件成功"
+        fi
+        read AA
+          ;;
+	4) clear
+          sub4
+          if [ $? -ne 0 ]
+         then
+         echo `date`"执行更新失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "执行更新失败"
+         else
+         echo `date`":执行更新成功">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "执行更新成功"
+        fi
+        read AA
+          ;;
+       5) clear
+          sub5
+        read AA
+          ;;
+	6) clear
+          sub6
+          if [ $? -ne 0 ]
+         then
+         echo `date`"执行回退失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "执行回退失败"
+         else
+         echo `date`":执行回退成功">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "执行回退成功"
+        fi
+        read AA
+          ;;
+	7) clear
+          sub7
+          if [ $? -ne 0 ]
+         then
+         echo `date`"执行数据库更新失败">>$LOGDIR/${SNAIL_ID}_proc.log
+         echo "执行数据库更新失败"
+         else
+         echo `date`":执行数据库更新成功">>$LOGDIR/${SNAIL_ID}_proc.log
+
+         echo "执行数据库更新成功"
+        fi
+        read AA
+          ;;
+       0) clear
+          exit ;;
+esac
+done
+
+

@@ -1,0 +1,4 @@
+PYPATH=$(dirname $(dirname `which python`))
+cc  -q32 -qtls -qcpluscmt -c -o esbfile.o -I../inc -I/usr/local/ssl/include/ -I$PYPATH/include/python2.7 -lcrypto -lpthread -lm esbfile.c
+ld  -G -bexpall -brtl -bnoentry -brtllib -bernotok  -lpthread -lc -lm -ls -ldl -lrt -lrtl -o esbfile.so -L../lib -lcapi esbfile.o $PYPATH/lib/libpython2.7.so
+#cc -q32 -qtls -qcpluscmt -o test -I../inc -I/usr/local/ssl/include/ -I$PYPATH/include/python2.7 -L../lib -lcapi -lcrypto -lpthread -lm esbfile.c $PYPATH/lib/libpython2.7.so
