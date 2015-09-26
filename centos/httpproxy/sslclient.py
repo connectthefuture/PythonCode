@@ -10,12 +10,12 @@ if 1:
     # ssl_socket = ssl.wrap_socket(socket, cert_reqs=ssl.CERT_REQUIRED, ca_certs=None)
     ssl_socket = ssl.wrap_socket(socket, cert_reqs=ssl.CERT_NONE, ca_certs=None)
     ssl_socket.connect(('127.0.0.1', 4430))
-    print repr(ssl_socket.getpeername())
-    print ssl_socket.cipher()
-    print pprint.pformat(ssl_socket.getpeercert())
+    print(repr(ssl_socket.getpeername()))
+    print(ssl_socket.cipher())
+    print(pprint.pformat(ssl_socket.getpeercert()))
     ssl_socket.write("Time: %s\r\n" % time.time())
     data = ssl_socket.read()
-    print data
+    print(data)
     ssl_socket.close()
 else:
     context = ssl._create_default_https_context()
