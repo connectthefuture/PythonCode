@@ -5,6 +5,12 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="database" />
+          <option value="clfetch.test.abcd.async" />
+          <option value="win32api" />
+          <option value="win32con" />
+          <option value="win32process" />
+          <option value="Applications.tcpdns.tcpdns.daemon" />
+          <option value="scrapytest.tutorial.tutorial.spiders.dmoz_spider.tutorial" />
         </list>
       </option>
     </inspection_tool>

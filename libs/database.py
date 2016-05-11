@@ -3,19 +3,18 @@
 import os
 
 try:
-    import cStringIO as StringIO
+    import cStringIO.StringIO as StringIO
 except:
     from io import StringIO
 import traceback
 import sqlite3
 import time, sys
-
-if __name__ == '__main__':
-    sys.path.append('../..')
+import logutils
 
 _conn = None
 _isUnicode = True
 _dbType = ""
+_logger = None
 
 
 def connect2Db():
@@ -26,6 +25,16 @@ def connect2Db():
 def setconn(c):
     global _conn
     _conn = c
+
+
+def setlog(log):
+    global _logger
+    _logger = log
+
+
+def getlog():
+    global _logger
+    return _logger
 
 
 def setUnicode(u):
@@ -136,6 +145,8 @@ def select(columns, conditions, table, returnTyp=0, extra='', encoding=None):
             pass
         sql = 'select %s from %s %s %s' % (
             ','.join(columns), table, 'where ' + conditionsql if conditionsql else '', extra)
+        if _logger:
+            _logger.info(sql)
         if _dbType != 'mysql':
             cursor.execute(sql, cols)
         else:
@@ -202,12 +213,15 @@ def insert(values, table, commitFlag=True):
         keysql = ",".join([i[0] for i in values])
         valuesql = ','.join(["'%s'" % v if type(v) is str else str(v) for k, v in values])
         sql = "insert into %s (%s) values (%s)" % (table, keysql, valuesql,)
+        if _logger:
+            _logger.info(sql)
         cursor.execute(sql)
         if commitFlag:
             _conn.commit()
         return [1, "", cursor.rowcount, None]
     except Exception as e:
-        return [0, "", cursor.rowcount, None]
+        _logger.error(traceback.format_exc())
+        return [0, "", None, None]
     finally:
         cursor.close()
 
@@ -224,6 +238,8 @@ def rollback():
 
 def execute(sql, commitFlag=True):
     global _conn
+    if _logger:
+        _logger.info(sql)
     try:
         cursor = None
         cursor = getcursor()

@@ -49,7 +49,7 @@ def LookupPrivilegeValue(SystemName, Name):
     luid = LUID()
     Advapi32 = windll.LoadLibrary("Advapi32")
     Advapi32.LookupPrivilegeNameA(SystemName, Name, pointer(luid))
-    print luid.LowPart
+    print(luid.LowPart)
     return luid
 
 class LUID_AND_ATTRIBUTES(Structure):
